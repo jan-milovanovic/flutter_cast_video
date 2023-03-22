@@ -133,4 +133,9 @@ abstract class ChromeCastPlatform {
       PlatformViewCreatedCallback onPlatformViewCreated) {
     throw UnimplementedError('buildView() has not been implemented.');
   }
+
+  Widget buildViewHybrid(Map<String, dynamic> arguments,
+      PlatformViewCreatedCallback onPlatformViewCreated){
+    throw UnimplementedError('buildView() has not been implemented.');
+  }
 }
