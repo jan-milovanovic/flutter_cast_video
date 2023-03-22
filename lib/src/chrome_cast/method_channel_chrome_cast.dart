@@ -78,7 +78,9 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   @override
-  Future<void> loadMedia(String url, String title, String subtitle, String image, {bool? live, required int id}) {
+  Future<void> loadMedia(
+      String url, String title, String subtitle, String image,
+      {bool? live, required int id}) {
     final Map<String, dynamic> args = {
       'url': url,
       'title': title,
@@ -115,8 +117,9 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   @override
-  Future<Map<dynamic,dynamic>?> getMediaInfo({required int id}) async {
-    return (await channel(id)!.invokeMethod<Map<dynamic,dynamic>?>('chromeCast#getMediaInfo'));
+  Future<Map<dynamic, dynamic>?> getMediaInfo({required int id}) async {
+    return (await channel(id)!
+        .invokeMethod<Map<dynamic, dynamic>?>('chromeCast#getMediaInfo'));
   }
 
   @override
@@ -178,11 +181,9 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
         break;
       case 'chromeCast#didPlayerStatusUpdated':
         var arg = 0;
-        if(call.arguments is int?)
-          arg = call.arguments ?? 0;
+        if (call.arguments is int?) arg = call.arguments ?? 0;
 
-        _eventStreamController
-            .add(PlayerStatusDidUpdatedEvent(id, arg));
+        _eventStreamController.add(PlayerStatusDidUpdatedEvent(id, arg));
         break;
       default:
         throw MissingPluginException();
@@ -216,31 +217,28 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
       PlatformViewCreatedCallback onPlatformViewCreated) {
     if (defaultTargetPlatform == TargetPlatform.android) {
       return PlatformViewLink(
-          viewType: 'ChromeCastButton',
-          surfaceFactory: (context, controller) {
-            return AndroidViewSurface(
-              controller: controller as AndroidViewController,
-              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
-              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
-            );
-          },
-          onCreatePlatformView: (params){
-            print("CAME HERE");
-            return PlatformViewsService.initExpensiveAndroidView(
-                id: params.id,
-                viewType: 'ChromeCastButton',
-                creationParams: arguments,
-                creationParamsCodec: const StandardMessageCodec(),
-                layoutDirection: TextDirection.ltr,
-                onFocus: () {
-                  params.onFocusChanged(true);
-                },
-            )..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+        viewType: 'ChromeCastButton',
+        surfaceFactory: (context, controller) {
+          return AndroidViewSurface(
+            controller: controller as AndroidViewController,
+            gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+            hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+          );
+        },
+        onCreatePlatformView: (params) {
+          return PlatformViewsService.initExpensiveAndroidView(
+            id: params.id,
+            viewType: params.viewType,
+            creationParams: arguments,
+            creationParamsCodec: const StandardMessageCodec(),
+            layoutDirection: TextDirection.ltr,
+            onFocus: () => params.onFocusChanged(true),
+          )
+            ..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
             ..addOnPlatformViewCreatedListener(onPlatformViewCreated)
             ..create();
-          },
+        },
       );
-
     }
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return UiKitView(

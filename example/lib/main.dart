@@ -40,34 +40,28 @@ class _CastSampleState extends State<CastSample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text('Plugin example app'),
-        actions: <Widget>[
-          /*
-          AirPlayButton(
-            size: CastSample._iconSize,
-            color: Colors.white,
-            activeColor: Colors.amber,
-            onRoutesOpening: () => print('opening'),
-            onRoutesClosed: () => print('closed'),
-          ),
-          */
-
-
-          ChromeCastButton(
-            size: CastSample._iconSize,
-            color: Colors.white,
-            onButtonCreated: _onButtonCreated,
-            onSessionStarted: _onSessionStarted,
-            onSessionEnded: () => setState(() => _state = AppState.idle),
-            onRequestCompleted: _onRequestCompleted,
-            onRequestFailed: _onRequestFailed,
-          ),
-
-        ],
-      ),
-      body: Center(child: _handleState())
-    );
+        appBar: AppBar(
+          title: Text('Plugin example app'),
+          actions: <Widget>[
+            AirPlayButton(
+              size: CastSample._iconSize,
+              color: Colors.white,
+              activeColor: Colors.amber,
+              onRoutesOpening: () => print('opening'),
+              onRoutesClosed: () => print('closed'),
+            ),
+            ChromeCastButton(
+              size: CastSample._iconSize,
+              color: Colors.white,
+              onButtonCreated: _onButtonCreated,
+              onSessionStarted: _onSessionStarted,
+              onSessionEnded: () => setState(() => _state = AppState.idle),
+              onRequestCompleted: _onRequestCompleted,
+              onRequestFailed: _onRequestFailed,
+            ),
+          ],
+        ),
+        body: Center(child: _handleState()));
   }
 
   @override
@@ -206,8 +200,8 @@ class _RoundIconButton extends StatelessWidget {
     return Column(
       children: [
         ElevatedButton(
-        child: Icon(icon, color: Colors.white),
-        onPressed: onPressed,
+          child: Icon(icon, color: Colors.white),
+          onPressed: onPressed,
         ),
       ],
     );
