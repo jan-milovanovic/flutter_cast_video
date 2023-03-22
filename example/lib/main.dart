@@ -52,6 +52,8 @@ class _CastSampleState extends State<CastSample> {
             onRoutesClosed: () => print('closed'),
           ),
           */
+
+
           ChromeCastButton(
             size: CastSample._iconSize,
             color: Colors.white,
@@ -61,9 +63,10 @@ class _CastSampleState extends State<CastSample> {
             onRequestCompleted: _onRequestCompleted,
             onRequestFailed: _onRequestFailed,
           ),
+
         ],
       ),
-      body: Center(child: _handleState()),
+      body: Center(child: _handleState())
     );
   }
 
@@ -200,9 +203,13 @@ class _RoundIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ElevatedButton(
-      child: Icon(icon, color: Colors.white),
-      onPressed: onPressed,
+    return Column(
+      children: [
+        ElevatedButton(
+        child: Icon(icon, color: Colors.white),
+        onPressed: onPressed,
+        ),
+      ],
     );
   }
 }

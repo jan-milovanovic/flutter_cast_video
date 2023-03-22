@@ -16,7 +16,7 @@ class ChromeCastButton extends StatelessWidget {
   /// Creates a widget displaying a ChromeCast button.
   ChromeCastButton({
     Key? key,
-    this.size = 30.0,
+    this.size = 70.0,
     this.color = Colors.black,
     this.onButtonCreated,
     this.onSessionStarted,
@@ -68,7 +68,7 @@ class ChromeCastButton extends StatelessWidget {
     return SizedBox(
       width: size,
       height: size,
-      child: _chromeCastPlatform.buildView(args, _onPlatformViewCreated),
+      child: _chromeCastPlatform.buildViewHybrid(args, _onPlatformViewCreated),
     );
   }
 

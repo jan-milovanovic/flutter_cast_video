@@ -1,7 +1,9 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_cast_video/src/chrome_cast/chrome_cast_event.dart';
 import 'package:flutter_cast_video/src/chrome_cast/chrome_cast_platform.dart';
@@ -197,6 +199,48 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
         creationParams: arguments,
         creationParamsCodec: const StandardMessageCodec(),
       );
+    }
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return UiKitView(
+        viewType: 'ChromeCastButton',
+        onPlatformViewCreated: onPlatformViewCreated,
+        creationParams: arguments,
+        creationParamsCodec: const StandardMessageCodec(),
+      );
+    }
+    return Text('$defaultTargetPlatform is not supported by ChromeCast plugin');
+  }
+
+  @override
+  Widget buildViewHybrid(Map<String, dynamic> arguments,
+      PlatformViewCreatedCallback onPlatformViewCreated) {
+    if (defaultTargetPlatform == TargetPlatform.android) {
+      return PlatformViewLink(
+          viewType: 'ChromeCastButton',
+          surfaceFactory: (context, controller) {
+            return AndroidViewSurface(
+              controller: controller as AndroidViewController,
+              gestureRecognizers: const <Factory<OneSequenceGestureRecognizer>>{},
+              hitTestBehavior: PlatformViewHitTestBehavior.opaque,
+            );
+          },
+          onCreatePlatformView: (params){
+            print("CAME HERE");
+            return PlatformViewsService.initExpensiveAndroidView(
+                id: params.id,
+                viewType: 'ChromeCastButton',
+                creationParams: arguments,
+                creationParamsCodec: const StandardMessageCodec(),
+                layoutDirection: TextDirection.ltr,
+                onFocus: () {
+                  params.onFocusChanged(true);
+                },
+            )..addOnPlatformViewCreatedListener(params.onPlatformViewCreated)
+            ..addOnPlatformViewCreatedListener(onPlatformViewCreated)
+            ..create();
+          },
+      );
+
     }
     if (defaultTargetPlatform == TargetPlatform.iOS) {
       return UiKitView(

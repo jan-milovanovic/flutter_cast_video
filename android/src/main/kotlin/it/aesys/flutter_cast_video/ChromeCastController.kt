@@ -1,14 +1,17 @@
 package it.aesys.flutter_cast_video
 
 import android.content.Context
+import android.graphics.Color
 import android.net.Uri
 import android.view.ContextThemeWrapper
+import android.widget.TextView
 import androidx.mediarouter.app.MediaRouteButton
 import com.google.android.gms.cast.MediaInfo
 import com.google.android.gms.cast.MediaLoadOptions
 import com.google.android.gms.cast.MediaMetadata
 import com.google.android.gms.cast.MediaStatus
 import com.google.android.gms.cast.MediaError
+import com.google.android.gms.cast.MediaSeekOptions
 import com.google.android.gms.cast.framework.CastButtonFactory
 import com.google.android.gms.cast.framework.CastContext
 import com.google.android.gms.cast.framework.Session
@@ -16,9 +19,9 @@ import com.google.android.gms.cast.framework.CastSession
 import com.google.android.gms.cast.framework.SessionManagerListener
 import com.google.android.gms.cast.framework.media.RemoteMediaClient
 import com.google.android.gms.common.api.PendingResult
-import com.google.android.gms.common.api.ResultCallback
 import com.google.android.gms.common.api.Status
 import com.google.android.gms.common.images.WebImage
+import io.flutter.Log
 import io.flutter.plugin.common.BinaryMessenger
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
@@ -35,6 +38,7 @@ class ChromeCastController(
     private val sessionManager = CastContext.getSharedInstance()?.sessionManager
 
     init {
+        Log.d("CHROMECAST","INIT")
         CastButtonFactory.setUpMediaRouteButton(context as Context, chromeCastButton)
         channel.setMethodCallHandler(this)
     }
@@ -55,7 +59,6 @@ class ChromeCastController(
             movieMetadata.putString(MediaMetadata.KEY_TITLE, title)
             movieMetadata.putString(MediaMetadata.KEY_SUBTITLE, subtitle)
             movieMetadata.addImage(WebImage(Uri.parse(imageUrl)))
-            //movieMetadata.addImage(WebImage(Uri.parse(imageUrl)))
 
             val media = MediaInfo
                             .Builder(url)
@@ -118,15 +121,18 @@ class ChromeCastController(
             if (relative) {
                 interval = interval?.plus(sessionManager?.currentCastSession?.remoteMediaClient?.mediaStatus?.streamPosition ?: 0)
             }
-            val request = sessionManager?.currentCastSession?.remoteMediaClient?.seek(interval?.toLong() ?: 0)
+            val seekOptions = MediaSeekOptions.Builder()
+                .setPosition(interval?.toLong() ?: 0)
+                .build()
+            val request = sessionManager?.currentCastSession?.remoteMediaClient?.seek(seekOptions)
             request?.addStatusListener(this)
         }
     }
 
-    private fun mediaInfoToMap(mediaInfo: MediaInfo?) : HashMap<String,String>? {
+    private fun mediaInfoToMap(mediaInfo: MediaInfo?) : HashMap<String,String> {
         val info = HashMap<String, String>()
         mediaInfo?.let {
-            val id = mediaInfo.contentId ?: ""
+            val id = mediaInfo.contentId
             info["id"] = id
                 info["url"] = mediaInfo.contentUrl ?: id
             info["contentType"] = mediaInfo.contentType ?: ""
@@ -136,13 +142,13 @@ class ChromeCastController(
                 info["subtitle"] = it.getString(MediaMetadata.KEY_SUBTITLE) ?: ""
                 val imgs = it.images
                 if (imgs.size > 0){
-                    info["image"] = imgs[0].url.toString();
+                    info["image"] = imgs[0].url.toString()
                 }
             }
         }
-        return info;
+        return info
     }
-    private fun getMediaInfo() : HashMap<String,String>? =  mediaInfoToMap(sessionManager?.currentCastSession?.remoteMediaClient?.getMediaInfo())
+    private fun getMediaInfo() : HashMap<String,String> =  mediaInfoToMap(sessionManager?.currentCastSession?.remoteMediaClient?.mediaInfo)
 
 
     private fun setVolume(args: Any?) {
@@ -182,17 +188,16 @@ class ChromeCastController(
         override fun onStatusUpdated() {
             val mediaStatus: MediaStatus? = sessionManager?.currentCastSession?.remoteMediaClient?.mediaStatus
             val playerStatus: Int = mediaStatus?.playerState ?: MediaStatus.PLAYER_STATE_UNKNOWN
-            var retCode: Int = playerStatus
-            if (playerStatus == MediaStatus.PLAYER_STATE_PLAYING) {
-                retCode = 1
+            val retCode: Int = if (playerStatus == MediaStatus.PLAYER_STATE_PLAYING) {
+                1
             } else if (playerStatus == MediaStatus.PLAYER_STATE_BUFFERING) {
-                retCode = 0
-            } else if (playerStatus == MediaStatus.PLAYER_STATE_IDLE && mediaStatus?.getIdleReason() === MediaStatus.IDLE_REASON_FINISHED) {
-                retCode = 2
+                0
+            } else if (playerStatus == MediaStatus.PLAYER_STATE_IDLE && mediaStatus?.idleReason === MediaStatus.IDLE_REASON_FINISHED) {
+                2
             }else if (playerStatus == MediaStatus.PLAYER_STATE_PAUSED){
-                retCode = 3
+                3
             }else {
-                retCode = 4 //error or unkonwn
+                4 //error or unkonwn
             }
             channel.invokeMethod("chromeCast#didPlayerStatusUpdated", retCode)
         }
@@ -205,7 +210,6 @@ class ChromeCastController(
     override fun getView() = chromeCastButton
 
     override fun dispose() {
-
     }
 
     // Flutter methods handling
@@ -262,7 +266,7 @@ class ChromeCastController(
 
     override fun onSessionStarted(p0: Session, p1: String) {
         if(p0 is CastSession) {
-            p0.remoteMediaClient?.registerCallback(mRemoteMediaClientListener);
+            p0.remoteMediaClient?.registerCallback(mRemoteMediaClientListener)
         }
         channel.invokeMethod("chromeCast#didStartSession", null)
     }
@@ -298,8 +302,6 @@ class ChromeCastController(
     override fun onSessionStartFailed(p0: Session, p1: Int) {
 
     }
-
-    // PendingResult.StatusListener
 
     override fun onComplete(status: Status) {
         if (status.isSuccess) {
