@@ -16,9 +16,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   final Map<int, MethodChannel?> _channels = {};
 
   /// Accesses the MethodChannel associated to the passed id.
-  MethodChannel? channel(int? id) {
-    return _channels[id!];
-  }
+  MethodChannel? channel(int? id) => _channels[id!];
 
   // The controller we need to broadcast the different events coming
   // from handleMethodCall.
@@ -140,6 +138,7 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
 
   @override
   Future<void> endSession({required int id}) {
+    _channels.remove(id);
     return channel(id)!.invokeMethod<void>('chromeCast#endSession');
   }
 
@@ -165,6 +164,9 @@ class MethodChannelChromeCast extends ChromeCastPlatform {
   }
 
   Future<dynamic> _handleMethodCall(MethodCall call, int id) async {
+    // only start session for the last value
+    if (_channels.keys.last != id) return;
+
     switch (call.method) {
       case 'chromeCast#didStartSession':
         _eventStreamController.add(SessionStartedEvent(id));
