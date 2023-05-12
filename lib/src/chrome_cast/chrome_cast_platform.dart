@@ -139,4 +139,8 @@ abstract class ChromeCastPlatform {
       PlatformViewCreatedCallback onPlatformViewCreated) {
     throw UnimplementedError('buildViewHybrid() has not been implemented.');
   }
+
+  void dispose(int id) {
+    throw UnimplementedError('dispose() has not been implemented.');
+  }
 }
