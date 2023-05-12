@@ -20,12 +20,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(home: CastSample());
+    return MaterialApp(home: CastSample(id: 0));
   }
 }
 
 class CastSample extends StatefulWidget {
+  CastSample({key, required this.id}) : super(key: key);
   static const _iconSize = 50.0;
+
+  final int id;
 
   @override
   _CastSampleState createState() => _CastSampleState();
@@ -40,34 +43,50 @@ class _CastSampleState extends State<CastSample> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: AppBar(
-          title: Text('Plugin example app'),
-          actions: <Widget>[
-            AirPlayButton(
-              size: CastSample._iconSize,
-              color: Colors.white,
-              activeColor: Colors.amber,
-              onRoutesOpening: () => print('opening'),
-              onRoutesClosed: () => print('closed'),
-            ),
-            ChromeCastButton(
-              size: CastSample._iconSize,
-              color: Colors.white,
-              onButtonCreated: _onButtonCreated,
-              onSessionStarted: _onSessionStarted,
-              onSessionEnded: () => setState(() => _state = AppState.idle),
-              onRequestCompleted: _onRequestCompleted,
-              onRequestFailed: _onRequestFailed,
+      appBar: AppBar(
+        title: Text('Plugin example app ID:${widget.id}'),
+        actions: <Widget>[
+          AirPlayButton(
+            size: CastSample._iconSize,
+            color: Colors.white,
+            activeColor: Colors.amber,
+            onRoutesOpening: () => print('opening'),
+            onRoutesClosed: () => print('closed'),
+          ),
+          ChromeCastButton(
+            size: CastSample._iconSize,
+            color: Colors.white,
+            onButtonCreated: _onButtonCreated,
+            onSessionStarted: _onSessionStarted,
+            onSessionEnded: () => setState(() => _state = AppState.idle),
+            onRequestCompleted: _onRequestCompleted,
+            onRequestFailed: _onRequestFailed,
+          ),
+        ],
+      ),
+      body: Center(
+        child: Column(
+          children: [
+            _handleState(),
+            TextButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => CastSample(id: widget.id + 1),
+                ),
+              ),
+              child: const Text('new page'),
             ),
           ],
         ),
-        body: Center(child: _handleState()));
+      ),
+    );
   }
 
   @override
   void dispose() {
     super.dispose();
     resetTimer();
+    _controller.dispose();
   }
 
   Widget _handleState() {
@@ -161,10 +180,11 @@ class _CastSampleState extends State<CastSample> {
   }
 
   Future<void> _onSessionStarted() async {
+    // if (widget.id != currentID) return;
     setState(() => _state = AppState.connected);
     await _controller.loadMedia(
         'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-        title: "TestTitle",
+        title: "TestTitle ID:${widget.id}",
         subtitle: "test Sub title",
         image:
             "https://smaller-pictures.appspot.com/images/dreamstime_xxl_65780868_small.jpg");
